@@ -381,9 +381,11 @@ namespace game
         if(!connected || intermission) return;
         if(!player1->canDash) return;
         if(!on) return;
-        
+
         player1->dashing = 300;
-        
+
+        player1->dashJumpable = (player1->physstate >= PHYS_SLIDE);
+                
         //reset sliding or groundpound
         player1->slide = 0;
         
@@ -396,16 +398,20 @@ namespace game
         if(!connected || intermission) return;
 
         player1->shouldSlide = on;
-        vecfromyawpitch(player1->yaw, player1->pitch, player1->move, player1->strafe, player1->lockedDir);
+        player1->lockedDir = vec(0,0,0);
+
         
         if(on && player1->slide == 0)
         {
+            player1->vel.z = -500;
             player1->groundPoundJump = 0;
             if(player1->physstate >= PHYS_SLIDE) //if in the air
             {
                 printf("entering slide directly\n");
                 player1->slide = 2;
-                player1->vel = player1->vel.mul(1.2);
+                player1->slideSpeed = vec2(player1->vel).magnitude();
+                player1->vel = vec(0,0,0);
+                vecfromyawpitch(player1->yaw, player1->pitch, player1->move, player1->strafe, player1->lockedDir);
             }else
             {
                 printf("groundpounding\n");
@@ -422,8 +428,8 @@ namespace game
     {
         if(!connected || intermission) return false;
         if(jumpspawn) respawn();
-        if (player1->slide)
-            return false;
+        // if (player1->slide > 0 && player1->lockedDir != vec(0,0,0))
+        //     return false;
         
         return player1->state!=CS_DEAD;
     }

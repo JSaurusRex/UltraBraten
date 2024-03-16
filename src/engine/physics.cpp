@@ -1601,8 +1601,9 @@ void modifyvelocity(physent *pl, bool local, bool water, bool floating, int curt
             pl->vel.z = max(pl->vel.z, JUMPVEL);
         }
     }
-    else if(pl->physstate >= PHYS_SLOPE || water)
+    else if(pl->physstate >= PHYS_SLOPE || water || (pl->dashing > 0 && pl->dashJumpable))
     {
+        pl->walljumpCount = 1;
         if(water && !pl->inwater) pl->vel.div(8);
         if(pl->jumping && allowmove)
         {
@@ -1623,13 +1624,11 @@ void modifyvelocity(physent *pl, bool local, bool water, bool floating, int curt
             if(water) { pl->vel.x /= 8.0f; pl->vel.y /= 8.0f; } // dampen velocity change even harder, gives correct water feel
 
             game::physicstrigger(pl, local, 1, 0);
-            if(pl->slide == 1)
-                pl->slide = 0;
+            pl->slide = 0;
         }
-    }else if(pl->physstate == PHYS_FALL && pl->jumping)
+    }else if(pl->physstate == PHYS_FALL && pl->jumping && pl->walljumpCount > 0)
     {
         //wall jump
-
         //shoot rays in 8 directions to check for wall
         float closest = 99;
         vec closestVec(0,0);
@@ -1661,6 +1660,8 @@ void modifyvelocity(physent *pl, bool local, bool water, bool floating, int curt
             pl->jumping = false;
             pl->falling = vec(0,0,0);
             pl->canDash = true;
+            pl->walljumpCount--;
+            game::physicstrigger(pl, local, 1, 0);
         }
     }
 
@@ -1697,6 +1698,9 @@ void modifyvelocity(physent *pl, bool local, bool water, bool floating, int curt
 
     if(allowmove && pl->dashing > 0)
     {
+        if(pl->lockedDir == vec(0,0,0))
+            vecfromyawpitch(pl->yaw, pl->pitch, pl->move, pl->strafe, pl->lockedDir);
+        
         vec dash(pl->lockedDir);
         vec postDash(pl->lockedDir);
         postDash.mul(pl->maxspeed);
@@ -1719,7 +1723,7 @@ void modifyvelocity(physent *pl, bool local, bool water, bool floating, int curt
         pl->vel = dash;
         pl->vel.mul(1.5f);
         pl->canDash = false;
-        pl->dashTimeout = 100;
+        pl->dashTimeout = 200;
         pl->falling = vec(0,0,0);
         return;
     }
@@ -1736,20 +1740,26 @@ void modifyvelocity(physent *pl, bool local, bool water, bool floating, int curt
     // printf("falling: %.2f\n", pl->falling.z);
 
     if(pl->slide)
-    {
-        if(pl->lockedDir == vec(0,0,0))
-            vecfromyawpitch(pl->yaw, pl->pitch, pl->move, pl->strafe, pl->lockedDir);
-        
+    {   
         pl->canDash = true;
         if(pl->slide == 2)
         {
+            if(pl->lockedDir == vec(0,0,0))
+                vecfromyawpitch(pl->yaw, pl->pitch, pl->move, pl->strafe, pl->lockedDir);
+            
             if(!pl->shouldSlide)
                 pl->slide = 0;
             
             if(pl->vel == vec(0,0,0))
             {
                 pl->vel = pl->lockedDir;
-                pl->vel.mul((pl->groundPoundJump+0.1f)*80);
+                float speed = (pl->groundPoundJump+0.1f)*80;
+                if(speed < pl->maxspeed*1.5)
+                    speed = pl->maxspeed*1.5;
+                if(speed < pl->slideSpeed)
+                    speed = pl->slideSpeed;
+                
+                pl->vel.mul(speed);
             }
         }
         //todo, don't hardcode eye height
@@ -1783,7 +1793,10 @@ void modifyvelocity(physent *pl, bool local, bool water, bool floating, int curt
     }
 
     vec d(m);
+    float speed = pl->vel.dist(vec(0,0,0));
+
     d.mul(pl->maxspeed);
+    
     if(pl->type==ENT_PLAYER)
     {
         if(floating)

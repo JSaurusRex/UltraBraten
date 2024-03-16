@@ -2523,17 +2523,21 @@ namespace server
         while(bannedips.length() && bannedips[0].expire-totalmillis <= 0) bannedips.remove(0);
         loopv(connects) if(totalmillis-connects[i]->connectmillis>15000) disconnect_client(connects[i]->clientnum, DISC_TIMEOUT);
 
-        if(nextexceeded && gamemillis > nextexceeded && (!m_timed || gamemillis < gamelimit))
-        {
-            nextexceeded = 0;
-            loopvrev(clients) 
-            {
-                clientinfo &c = *clients[i];
-                if(c.state.aitype != AI_NONE) continue;
-                if(c.checkexceeded()) disconnect_client(c.clientnum, DISC_MSGERR);
-                else c.scheduleexceeded();
-            }
-        }
+        // if(nextexceeded && gamemillis > nextexceeded && (!m_timed || gamemillis < gamelimit))
+        // {
+        //     nextexceeded = 0;
+        //     loopvrev(clients) 
+        //     {
+        //         clientinfo &c = *clients[i];
+        //         if(c.state.aitype != AI_NONE) continue;
+        //         if(c.checkexceeded()) 
+        //         {
+        //             printf("2535\n");
+        //             disconnect_client(c.clientnum, DISC_MSGERR);
+        //         }
+        //         else c.scheduleexceeded();
+        //     }
+        // }
 
         if(shouldcheckteamkills) checkteamkills();
 
@@ -2978,7 +2982,7 @@ namespace server
         if(ci && !ci->connected)
         {
             if(chan==0) return;
-            else if(chan!=1) { disconnect_client(sender, DISC_MSGERR); return; }
+            else if(chan!=1) { printf("2985\n"); disconnect_client(sender, DISC_MSGERR); return; }
             else while(p.length() < p.maxlen) switch(checktype(getint(p), ci))
             {
                 case N_CONNECT:
@@ -3026,6 +3030,7 @@ namespace server
                     break;
 
                 default:
+                    printf("3033\n");
                     disconnect_client(sender, DISC_MSGERR);
                     return;
             }
@@ -3718,11 +3723,11 @@ namespace server
             case N_EDITVSLOT:
             {
                 int size = server::msgsizelookup(type);
-                if(size<=0) { disconnect_client(sender, DISC_MSGERR); return; }
+                if(size<=0) { printf("3726\n"); disconnect_client(sender, DISC_MSGERR); return; }
                 loopi(size-1) getint(p);
-                if(p.remaining() < 2) { disconnect_client(sender, DISC_MSGERR); return; }
+                if(p.remaining() < 2) { printf("3728\n"); disconnect_client(sender, DISC_MSGERR); return; }
                 int extra = lilswap(*(const ushort *)p.pad(2));
-                if(p.remaining() < extra) { disconnect_client(sender, DISC_MSGERR); return; }
+                if(p.remaining() < extra) { printf("3730\n"); disconnect_client(sender, DISC_MSGERR); return; }
                 p.pad(extra);
                 if(ci && ci->state.state!=CS_SPECTATOR) QUEUE_MSG;
                 break;
@@ -3737,7 +3742,7 @@ namespace server
                     if(packlen > 0) p.subbuf(packlen);
                     break;
                 }
-                if(p.remaining() < packlen) { disconnect_client(sender, DISC_MSGERR); return; }
+                if(p.remaining() < packlen) { printf("3745\n"); disconnect_client(sender, DISC_MSGERR); return; }
                 packetbuf q(32 + packlen, ENET_PACKET_FLAG_RELIABLE);
                 putint(q, type);
                 putint(q, ci->clientnum);
@@ -3759,6 +3764,7 @@ namespace server
             #undef PARSEMESSAGES
 
             case -1:
+                printf("3767\n");
                 disconnect_client(sender, DISC_MSGERR);
                 return;
 
@@ -3769,7 +3775,7 @@ namespace server
             default: genericmsg:
             {
                 int size = server::msgsizelookup(type);
-                if(size<=0) { disconnect_client(sender, DISC_MSGERR); return; }
+                if(size<=0) { printf("3778\n"); disconnect_client(sender, DISC_MSGERR); return; }
                 loopi(size-1) getint(p);
                 if(ci) switch(msgfilter[type])
                 {

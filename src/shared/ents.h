@@ -80,10 +80,13 @@ struct physent                                  // base entity type, can be affe
     bool jumping;
 
     vec lockedDir;
+    int walljumpCount;
     float dashing;
+    bool dashJumpable;
     int dashTimeout;
     bool canDash;
     int slide;
+    float slideSpeed;
     bool shouldSlide;
     float groundPoundJump;
     schar move, strafe;
