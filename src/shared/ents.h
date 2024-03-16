@@ -84,6 +84,7 @@ struct physent                                  // base entity type, can be affe
     int dashTimeout;
     bool canDash;
     int slide;
+    bool shouldSlide;
     float groundPoundJump;
     schar move, strafe;
 

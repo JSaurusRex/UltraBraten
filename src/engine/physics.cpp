@@ -1607,6 +1607,11 @@ void modifyvelocity(physent *pl, bool local, bool water, bool floating, int curt
         if(pl->jumping && allowmove)
         {
             pl->jumping = false;
+
+            if(!water)
+            {
+                pl->dashing = 0;
+            }
             
             float jumpVel = JUMPVEL;
             if(pl->slide)
@@ -1695,7 +1700,6 @@ void modifyvelocity(physent *pl, bool local, bool water, bool floating, int curt
         vec dash(pl->lockedDir);
         vec postDash(pl->lockedDir);
         postDash.mul(pl->maxspeed);
-        printf("maxspeed %f\n", pl->maxspeed);
 
         // if(pl->physstate == PHYS_FALL)
         // {
@@ -1711,9 +1715,9 @@ void modifyvelocity(physent *pl, bool local, bool water, bool floating, int curt
         dash.z = 0;
 
         float dashTime = (300-pl->dashing) / 300.0f;
-        printf("dashTime %f\n", dashTime);
         dash.lerp(postDash, dashTime);
         pl->vel = dash;
+        pl->vel.mul(1.5f);
         pl->canDash = false;
         pl->dashTimeout = 100;
         pl->falling = vec(0,0,0);
@@ -1733,9 +1737,20 @@ void modifyvelocity(physent *pl, bool local, bool water, bool floating, int curt
 
     if(pl->slide)
     {
+        if(pl->lockedDir == vec(0,0,0))
+            vecfromyawpitch(pl->yaw, pl->pitch, pl->move, pl->strafe, pl->lockedDir);
+        
+        pl->canDash = true;
         if(pl->slide == 2)
         {
-            pl->canDash = true;
+            if(!pl->shouldSlide)
+                pl->slide = 0;
+            
+            if(pl->vel == vec(0,0,0))
+            {
+                pl->vel = pl->lockedDir;
+                pl->vel.mul((pl->groundPoundJump+0.1f)*80);
+            }
         }
         //todo, don't hardcode eye height
         pl->eyeheight = 7;
@@ -1752,8 +1767,6 @@ void modifyvelocity(physent *pl, bool local, bool water, bool floating, int curt
             {
                 // printf("convert!\n");
                 pl->slide = 2;
-                pl->vel = pl->lockedDir;
-                pl->vel.mul(pl->groundPoundJump*80);
             }
 
             return;
