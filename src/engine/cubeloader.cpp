@@ -104,7 +104,7 @@ struct cubeloader
         }
         e.attr5 = 0;
 
-        printf("entity: type %i  attr1 %i attr2 %i attr3 %i attr4 %i  attr5 %i\n", e.type, e.attr1, e.attr2, e.attr3, e.attr4, e.attr5);
+        // printf("entity: type %i  attr1 %i attr2 %i attr3 %i attr4 %i  attr5 %i\n", e.type, e.attr1, e.attr2, e.attr3, e.attr4, e.attr5);
     }
 
     cube &getcube(int x, int y, int z)

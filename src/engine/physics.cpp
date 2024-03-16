@@ -1690,23 +1690,34 @@ void modifyvelocity(physent *pl, bool local, bool water, bool floating, int curt
 
     // printf("colliding: %i\n", pl->collidetype);
 
-    if(allowmove && pl->dashing)
+    if(allowmove && pl->dashing > 0)
     {
-        vec dash(m);
+        vec dash(pl->lockedDir);
+        vec postDash(pl->lockedDir);
+        postDash.mul(pl->maxspeed);
+        printf("maxspeed %f\n", pl->maxspeed);
 
-        if(pl->physstate == PHYS_FALL)
-        {
-            dash.mul(DASHVELAIR);
-            pl->vel.z = JUMPVEL*0.7;
-        }
-        else
-            dash.mul(DASHVELGROUND);
-        pl->dashing = false;
+        // if(pl->physstate == PHYS_FALL)
+        // {
+        //     dash.mul(DASHVELAIR);
+        //     pl->vel.z = 0;
+        // }
+        // else
+        //     dash.mul(DASHVELGROUND);
+
+        dash.mul(pl->maxspeed*3);
+        
+        pl->dashing -= curtime;
         dash.z = 0;
-        pl->vel.add(dash);
+
+        float dashTime = (300-pl->dashing) / 300.0f;
+        printf("dashTime %f\n", dashTime);
+        dash.lerp(postDash, dashTime);
+        pl->vel = dash;
         pl->canDash = false;
         pl->dashTimeout = 100;
         pl->falling = vec(0,0,0);
+        return;
     }
 
     // printf("slide: %i\n", pl->slide);
@@ -1724,7 +1735,7 @@ void modifyvelocity(physent *pl, bool local, bool water, bool floating, int curt
     {
         if(pl->slide == 2)
         {
-            pl->canDash = false;
+            pl->canDash = true;
         }
         //todo, don't hardcode eye height
         pl->eyeheight = 7;
@@ -1741,7 +1752,7 @@ void modifyvelocity(physent *pl, bool local, bool water, bool floating, int curt
             {
                 // printf("convert!\n");
                 pl->slide = 2;
-                pl->vel = m;
+                pl->vel = pl->lockedDir;
                 pl->vel.mul(pl->groundPoundJump*80);
             }
 
@@ -1749,7 +1760,7 @@ void modifyvelocity(physent *pl, bool local, bool water, bool floating, int curt
         }
 
         m = vec(0,0,0);
-        // return;
+        return;
     }
 
     if(pl->slide == 0 && pl->eyeheight < 14)

@@ -380,7 +380,10 @@ namespace game
     {
         if(!connected || intermission) return;
         if(!player1->canDash) return;
-        player1->dashing = on;
+        player1->dashing = 300;
+        
+        vecfromyawpitch(player1->yaw, player1->pitch, player1->move, player1->strafe, player1->lockedDir);
+
     }
 
     void doslide(bool on)
@@ -394,12 +397,12 @@ namespace game
         {
             if(player1->physstate >= PHYS_SLIDE || (player1->move || player1->strafe))
             {
-                // printf("entering slide directly\n");
+                printf("entering slide directly\n");
                 player1->slide = 2;
                 player1->vel = player1->vel.mul(1.2);
             }else
             {
-                // printf("groundpounding\n");
+                printf("groundpounding\n");
                 player1->slide = 1;
                 player1->vel.x = 0;
                 player1->vel.y = 0;

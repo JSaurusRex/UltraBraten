@@ -78,7 +78,9 @@ struct physent                                  // base entity type, can be affe
     ushort timeinair;
     uchar inwater;
     bool jumping;
-    bool dashing;
+
+    vec lockedDir;
+    float dashing;
     int dashTimeout;
     bool canDash;
     int slide;

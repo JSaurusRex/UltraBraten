@@ -1861,7 +1861,7 @@ void invalidatepostfx()
 
 int xtraverts, xtravertsva;
 
-int frameCounter = 0;
+// int frameCounter = 0;
 
 void gl_drawframe()
 {
@@ -1907,9 +1907,9 @@ void gl_drawframe()
     glClearColor(0,0,0,255);
     glClear(GL_DEPTH_BUFFER_BIT|GL_COLOR_BUFFER_BIT);
 
-    frameCounter++;
-    if(frameCounter % 2 != 0)
-        return;
+    // frameCounter++;
+    // if(frameCounter % 2 != 0)
+    //     return;
 
     if(wireframe && editmode) glPolygonMode(GL_FRONT_AND_BACK, GL_LINE); 
 
