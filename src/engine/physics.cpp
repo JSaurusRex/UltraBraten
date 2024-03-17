@@ -1721,7 +1721,7 @@ void modifyvelocity(physent *pl, bool local, bool water, bool floating, int curt
         float dashTime = (300-pl->dashing) / 300.0f;
         dash.lerp(postDash, dashTime);
         pl->vel = dash;
-        pl->vel.mul(1.5f);
+        // pl->vel.mul(1.5f);
         pl->canDash = false;
         pl->dashTimeout = 200;
         pl->falling = vec(0,0,0);
