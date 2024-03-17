@@ -405,7 +405,8 @@ namespace game
         {
             player1->vel.z = -500;
             player1->groundPoundJump = 0;
-            if(player1->physstate >= PHYS_SLIDE) //if in the air
+            player1->dashing = 0;
+            if(player1->physstate >= PHYS_SLIDE) //if not in the air
             {
                 printf("entering slide directly\n");
                 player1->slide = 2;

@@ -1764,7 +1764,6 @@ void modifyvelocity(physent *pl, bool local, bool water, bool floating, int curt
         pl->canDash = true;
         if(pl->slide == 2)
         {
-            // printf("lockeddir %f %f %f\n", pl->lockedDir.x, pl->lockedDir.y, pl->lockedDir.z);
             if(pl->lockedDir == vec(0,0,0))
             {
                 vecfromyawpitch(pl->yaw, pl->pitch, pl->move, pl->strafe, pl->lockedDir);
@@ -1807,6 +1806,8 @@ void modifyvelocity(physent *pl, bool local, bool water, bool floating, int curt
             {
                 // printf("convert!\n");
                 pl->slide = 2;
+                pl->vel = vec(0,0,0);
+                pl->slideSpeed = 0;
             }
 
             return;
