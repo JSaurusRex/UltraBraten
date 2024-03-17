@@ -1657,13 +1657,18 @@ void modifyvelocity(physent *pl, bool local, bool water, bool floating, int curt
         {
             // printf("dist: %.3f\n", closest);
             //found wall
-            pl->vel.add(closestVec.mul(-JUMPVEL));
-            pl->vel.z = max(pl->vel.z+JUMPVEL*0.8f, JUMPVEL*0.8f);
+            float jumpforce = JUMPVEL;
+            if(pl->groundPoundJump > 1)
+                jumpforce *= pl->groundPoundJump*0.8f;
+            
+            pl->vel.add(closestVec.mul(-jumpforce));
+            pl->vel.z = max(pl->vel.z+jumpforce*0.8f, jumpforce*0.8f);
             pl->jumping = false;
             pl->falling = vec(0,0,0);
             pl->canDash = true;
             pl->walljumpCount--;
             pl->dashing = 0;
+            pl->slide = 0;
             game::physicstrigger(pl, local, 1, 0);
         }
     }
@@ -1759,15 +1764,16 @@ void modifyvelocity(physent *pl, bool local, bool water, bool floating, int curt
         pl->canDash = true;
         if(pl->slide == 2)
         {
+            // printf("lockeddir %f %f %f\n", pl->lockedDir.x, pl->lockedDir.y, pl->lockedDir.z);
             if(pl->lockedDir == vec(0,0,0))
             {
                 vecfromyawpitch(pl->yaw, pl->pitch, pl->move, pl->strafe, pl->lockedDir);
                 if(pl->lockedDir != vec(0,0,0))
+                {
                     pl->lockedDir = pl->lockedDir.normalize();
-                else
+                } else
                 {
                     pl->slide = 0;
-                    return;
                 }
             }
             
