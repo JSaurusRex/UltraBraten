@@ -1802,12 +1802,13 @@ void modifyvelocity(physent *pl, bool local, bool water, bool floating, int curt
                 pl->groundPoundJump = 1;
             pl->groundPoundJump += 0.05;
 
+            pl->slideSpeed -= 1;
+
             if(pl->physstate != PHYS_FALL)
             {
                 // printf("convert!\n");
                 pl->slide = 2;
                 pl->vel = vec(0,0,0);
-                pl->slideSpeed = 0;
             }
 
             return;

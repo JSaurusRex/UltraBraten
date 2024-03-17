@@ -424,6 +424,13 @@ namespace game
             {
                 printf("groundpounding\n");
                 player1->slide = 1;
+
+                player1->vel.z = 0;
+                if(player1->vel == vec(0,0,0))
+                {
+                    player1->slideSpeed = 0;
+                }else
+                    player1->slideSpeed = vec2(player1->vel).magnitude();
                 player1->vel.x = 0;
                 player1->vel.y = 0;
             }
