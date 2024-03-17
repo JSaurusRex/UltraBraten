@@ -795,7 +795,7 @@ namespace game
 
         vec from = d->o, to = targ, dir = vec(to).sub(from).safenormalize();
         float dist = to.dist(from);
-        vec kickback = vec(dir).mul(guns[d->gunselect].kickamount*-4);
+        vec kickback = vec(dir).mul(guns[d->gunselect].kickamount*-5);
         // vec kickback = vec(dir).mul(guns[d->gunselect].kickamount*-2.5f);
         d->vel.add(kickback);
         float shorten = 0;

@@ -1603,7 +1603,7 @@ void modifyvelocity(physent *pl, bool local, bool water, bool floating, int curt
     }
     else if(pl->physstate >= PHYS_SLOPE || water || (pl->dashing > 0 && pl->dashJumpable))
     {
-        pl->walljumpCount = 1;
+        pl->walljumpCount = 2;
         if(water && !pl->inwater) pl->vel.div(8);
         if(pl->jumping && allowmove)
         {
@@ -1615,8 +1615,11 @@ void modifyvelocity(physent *pl, bool local, bool water, bool floating, int curt
             }
             
             float jumpVel = JUMPVEL;
-            if(pl->slide)
-                jumpVel *= pl->groundPoundJump;
+            if(pl->groundPoundJump > 1)
+                jumpVel *= pl->groundPoundJump*0.8f;
+            
+            pl->groundPoundJump = 0;
+            pl->slide = 0;
 
             // printf("jumping : %f     %f\n", jumpVel, pl->groundPoundJump);
             
@@ -1624,7 +1627,6 @@ void modifyvelocity(physent *pl, bool local, bool water, bool floating, int curt
             if(water) { pl->vel.x /= 8.0f; pl->vel.y /= 8.0f; } // dampen velocity change even harder, gives correct water feel
 
             game::physicstrigger(pl, local, 1, 0);
-            pl->slide = 0;
         }
     }else if(pl->physstate == PHYS_FALL && pl->jumping && pl->walljumpCount > 0)
     {
@@ -1661,6 +1663,7 @@ void modifyvelocity(physent *pl, bool local, bool water, bool floating, int curt
             pl->falling = vec(0,0,0);
             pl->canDash = true;
             pl->walljumpCount--;
+            pl->dashing = 0;
             game::physicstrigger(pl, local, 1, 0);
         }
     }
@@ -1687,6 +1690,9 @@ void modifyvelocity(physent *pl, bool local, bool water, bool floating, int curt
     if(pl->dashTimeout >= 0)
     {
         pl->dashTimeout -= 1;
+
+        if(pl->physstate != PHYS_FALL)
+            pl->dashTimeout -= 1;
     }
 
     if(pl->dashTimeout < 0 && pl->physstate != PHYS_FALL)
@@ -1699,7 +1705,13 @@ void modifyvelocity(physent *pl, bool local, bool water, bool floating, int curt
     if(allowmove && pl->dashing > 0)
     {
         if(pl->lockedDir == vec(0,0,0))
+        {
             vecfromyawpitch(pl->yaw, pl->pitch, pl->move, pl->strafe, pl->lockedDir);
+            if(pl->lockedDir == vec(0,0,0))
+                pl->lockedDir = vec(0,0,3);
+            else
+                pl->lockedDir = pl->lockedDir.normalize();
+        }
         
         vec dash(pl->lockedDir);
         vec postDash(pl->lockedDir);
@@ -1723,8 +1735,11 @@ void modifyvelocity(physent *pl, bool local, bool water, bool floating, int curt
         pl->vel = dash;
         // pl->vel.mul(1.5f);
         pl->canDash = false;
-        pl->dashTimeout = 200;
+        pl->dashTimeout = 150;
         pl->falling = vec(0,0,0);
+
+        if(dashTime > 0.5)
+            pl->dashing = 0;
         return;
     }
 
@@ -1745,7 +1760,16 @@ void modifyvelocity(physent *pl, bool local, bool water, bool floating, int curt
         if(pl->slide == 2)
         {
             if(pl->lockedDir == vec(0,0,0))
+            {
                 vecfromyawpitch(pl->yaw, pl->pitch, pl->move, pl->strafe, pl->lockedDir);
+                if(pl->lockedDir != vec(0,0,0))
+                    pl->lockedDir = pl->lockedDir.normalize();
+                else
+                {
+                    pl->slide = 0;
+                    return;
+                }
+            }
             
             if(!pl->shouldSlide)
                 pl->slide = 0;
